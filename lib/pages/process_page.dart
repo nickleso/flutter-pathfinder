@@ -3,10 +3,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:pathfinder/components/header.dart';
 import 'package:pathfinder/components/main_text_button.dart';
 import 'package:pathfinder/components/text_widget.dart';
-import 'package:pathfinder/pages/process_page.dart';
+import 'package:pathfinder/pages/result_list_page.dart';
 
-class HomePage extends StatelessWidget {
-  const HomePage({super.key, required this.title});
+class ProcessPage extends StatelessWidget {
+  const ProcessPage({super.key, required this.title});
 
   final String title;
 
@@ -16,24 +16,26 @@ class HomePage extends StatelessWidget {
       body: Column(
         children: [
           const Header(
-            title: 'Home screen',
+            title: 'Process screen',
+            withButton: true,
           ),
-          SizedBox(
-            height: 24.h,
-          ),
+          const Spacer(),
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 12.0),
-            child:
-                TextWidget(text: 'Set valid API base URL in order to continue'),
+            child: TextWidget(
+              text:
+                  'All calculations has finished, you can send ypur results to server',
+              textAlign: TextAlign.center,
+            ),
           ),
           const Spacer(),
           MainTextButton(
-            buttonName: 'Start counting process',
+            buttonName: 'Send results to server',
             onPressed: () => Navigator.push(
               context,
               MaterialPageRoute(
                   builder: (context) =>
-                      const ProcessPage(title: 'Process screen')),
+                      const ResultListPage(title: 'Process screen')),
             ),
           ),
           SizedBox(
