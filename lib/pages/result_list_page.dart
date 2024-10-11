@@ -4,9 +4,7 @@ import 'package:pathfinder/components/header.dart';
 import 'package:pathfinder/components/text_widget.dart';
 
 class ResultListPage extends StatelessWidget {
-  const ResultListPage({super.key, required this.title});
-
-  final String title;
+  const ResultListPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -27,16 +25,6 @@ class ResultListPage extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
           ),
-          // const Spacer(),
-          // MainTextButton(
-          //   buttonName: 'Send results to server',
-          //   onPressed: () => Navigator.push(
-          //     context,
-          //     MaterialPageRoute(
-          //         builder: (context) =>
-          //             const ResultListPage(title: 'Process screen')),
-          //   ),
-          // ),
           SizedBox(
             height: 24.h,
           )
