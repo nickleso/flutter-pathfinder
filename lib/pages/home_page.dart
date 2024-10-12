@@ -20,7 +20,6 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final TextEditingController _urlController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  // final String urlString = 'https://flutter.webspark.dev/flutter/api';
 
   late final PathfinderRepository pathfinderRepository;
   Map<String, dynamic> searchResults = {};

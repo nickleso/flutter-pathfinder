@@ -25,6 +25,7 @@ class _ProcessPageState extends State<ProcessPage> {
   bool isError = false;
   String? errorMessage;
   List<dynamic>? pathfinderData;
+  double progress = 0.0;
 
   @override
   void initState() {
@@ -34,22 +35,32 @@ class _ProcessPageState extends State<ProcessPage> {
     final blocState = context.read<PathfinderBloc>().state as PathfinderLoaded;
     pathfinderData = blocState.data;
 
-    Future.delayed(const Duration(seconds: 1), () {
-      print('One second has passed.'); // Prints after 1 second.
-      calculatPathfinderData();
-    });
+    calculatPathfinderData();
   }
 
-  void calculatPathfinderData() {
+  void calculatPathfinderData() async {
     List<Map<String, dynamic>> results = [];
     List<Map<String, dynamic>> updatedData = [];
 
-    for (var obj in pathfinderData!) {
+    for (var i = 0; i < pathfinderData!.length; i++) {
+      var obj = pathfinderData![i];
+
       List<String> field = List<String>.from(obj['field']);
       Map<String, int> start = Map<String, int>.from(obj['start']);
       Map<String, int> end = Map<String, int>.from(obj['end']);
 
-      List<Map<String, int>>? path = bfs(field, start, end);
+      List<Map<String, int>>? path = await bfs(
+        field,
+        start,
+        end,
+        (double currentProgress) {
+          setState(() {
+            progress = currentProgress;
+          });
+        },
+        i,
+        pathfinderData!.length,
+      );
 
       if (path != null) {
         String pathString =
@@ -71,31 +82,28 @@ class _ProcessPageState extends State<ProcessPage> {
     }
 
     pathfinderData = results;
-    context.read<PathfinderBloc>().add(SavePathfinderData(updatedData));
-
-    print('Calculation Results: $results');
+    if (mounted) {
+      context.read<PathfinderBloc>().add(SavePathfinderData(updatedData));
+    }
 
     setState(() {
-      isCalculating = false;
+      progress = 1.0;
     });
   }
 
   Future<void> sendPathfinderResult(String url) async {
-    print('****sending_');
-
     setState(() {
+      isCalculating = false;
       isLoading = true;
       errorMessage = null;
       isError = false;
     });
 
     try {
-      final result = await pathfinderRepository.sendResult(
+      await pathfinderRepository.sendResult(
         urlString: url,
         body: pathfinderData!,
       );
-
-      print('****sending_result: $result');
 
       setState(() {
         if (mounted) {
@@ -107,8 +115,6 @@ class _ProcessPageState extends State<ProcessPage> {
         isLoading = false;
       });
     } catch (error) {
-      print('****process_error: $error');
-
       setState(() {
         isError = true;
         errorMessage = error.toString();
@@ -136,9 +142,9 @@ class _ProcessPageState extends State<ProcessPage> {
                   TextWidget(
                     text: isLoading
                         ? 'Sending...'
-                        : isCalculating
-                            ? 'Calculating...'
-                            : 'All calculations have finished. You can send results to the server.',
+                        : progress == 1.0
+                            ? 'All calculations have finished. You can send results to the server.'
+                            : 'Calculating...',
                     textAlign: TextAlign.center,
                   ),
                   SizedBox(height: 24.h),
@@ -146,11 +152,21 @@ class _ProcessPageState extends State<ProcessPage> {
                     const CircularProgressIndicator(
                         color: Color.fromARGB(255, 110, 230, 11)),
                   SizedBox(height: 24.h),
-                  if (!isLoading)
-                    const TextWidget(
-                      text: '100%',
-                      textAlign: TextAlign.center,
-                      fontSize: 20,
+                  if (isCalculating)
+                    Column(
+                      children: [
+                        CircularProgressIndicator(
+                          value: progress,
+                          color: const Color.fromARGB(255, 110, 230, 11),
+                        ),
+                        SizedBox(height: 12.h),
+                        TextWidget(
+                          text: '${(progress * 100).toStringAsFixed(0)}%',
+                          fontSize: 18,
+                          color: const Color(0xFFF2F2F2),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ],
                     ),
                   SizedBox(height: 24.h),
                   if (isError)
@@ -161,12 +177,13 @@ class _ProcessPageState extends State<ProcessPage> {
                       fontSize: 14,
                     ),
                   const Spacer(),
-                  MainTextButton(
-                    buttonName:
-                        isLoading ? 'Sending...' : 'Send results to server',
-                    isDisabled: isLoading,
-                    onPressed: () => sendPathfinderResult(urlString),
-                  ),
+                  if (progress == 1.0)
+                    MainTextButton(
+                      buttonName:
+                          isLoading ? 'Sending...' : 'Send results to server',
+                      isDisabled: isLoading,
+                      onPressed: () => sendPathfinderResult(urlString),
+                    ),
                 ],
               ),
             ),

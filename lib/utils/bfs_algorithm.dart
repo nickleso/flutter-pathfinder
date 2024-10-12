@@ -1,7 +1,13 @@
+import 'dart:async';
 import 'dart:collection';
 
-List<Map<String, int>>? bfs(
-    List<String> field, Map<String, int> start, Map<String, int> end) {
+Future<List<Map<String, int>>?> bfs(
+    List<String> field,
+    Map<String, int> start,
+    Map<String, int> end,
+    Function(double) onProgress,
+    int objectIndex,
+    int totalObjects) async {
   List<List<int>> directions = [
     [0, 1],
     [0, -1],
@@ -17,10 +23,20 @@ List<Map<String, int>>? bfs(
   queue.add([start]);
 
   Set<String> visited = {key(start['x'] ?? 0, start['y'] ?? 0)};
+  int totalSteps = field.length * field[0].length;
+  int processedSteps = 0;
 
   while (queue.isNotEmpty) {
+    await Future.delayed(const Duration(milliseconds: 50));
+
     List<Map<String, int>> path = queue.removeFirst();
     Map<String, int> current = path.last;
+
+    processedSteps++;
+    double localProgress = processedSteps / totalSteps;
+
+    double overallProgress = (objectIndex + localProgress) / totalObjects;
+    onProgress(overallProgress);
 
     if (current['x'] == end['x'] && current['y'] == end['y']) {
       return path;
