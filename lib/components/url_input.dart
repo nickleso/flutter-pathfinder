@@ -21,7 +21,6 @@ class UrlInput extends StatelessWidget {
         color: Color(0xFFFDFDFD),
       ),
       decoration: InputDecoration(
-        hintText: 'https://...',
         hintStyle: const TextStyle(
             fontSize: 14,
             color: Color(0xFFFDFDFD),

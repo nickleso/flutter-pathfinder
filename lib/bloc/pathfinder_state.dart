@@ -2,6 +2,7 @@ abstract class PathfinderState {}
 
 class PathfinderLoaded extends PathfinderState {
   final List<dynamic> data;
+  final String url;
 
-  PathfinderLoaded(this.data);
+  PathfinderLoaded({required this.data, required this.url});
 }

@@ -5,3 +5,9 @@ class SavePathfinderData extends PathfinderEvent {
 
   SavePathfinderData(this.data);
 }
+
+class SavePathfinderUrl extends PathfinderEvent {
+  final String url;
+
+  SavePathfinderUrl(this.url);
+}

@@ -20,7 +20,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final TextEditingController _urlController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final String urlString = 'https://flutter.webspark.dev/flutter/api';
+  // final String urlString = 'https://flutter.webspark.dev/flutter/api';
 
   late final PathfinderRepository pathfinderRepository;
   Map<String, dynamic> searchResults = {};
@@ -40,8 +40,6 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> fetchPathfinderFields(String url) async {
-    print('****');
-
     if (!isValidUrl(url)) {
       setState(() {
         isError = true;
@@ -59,12 +57,12 @@ class _HomePageState extends State<HomePage> {
     try {
       final result = await pathfinderRepository.getFields(urlString: url);
 
-      print('****result: ${result['data']}');
-
-      context.read<PathfinderBloc>().add(SavePathfinderData(result['data']));
+      if (mounted) {
+        context.read<PathfinderBloc>().add(SavePathfinderData(result['data']));
+        context.read<PathfinderBloc>().add(SavePathfinderUrl(url));
+      }
 
       setState(() {
-        // searchResults = result;
         isLoading = false;
 
         if (mounted) {
@@ -75,8 +73,6 @@ class _HomePageState extends State<HomePage> {
         }
       });
     } catch (error) {
-      print('****error: $error');
-
       setState(() {
         isError = true;
         errorMessage = error.toString();
@@ -122,14 +118,17 @@ class _HomePageState extends State<HomePage> {
                       color: const Color(0xFFD93535),
                       fontSize: 14,
                     ),
+                  if (isLoading) const Spacer(),
+                  if (isLoading)
+                    const CircularProgressIndicator(
+                        color: Color.fromARGB(255, 110, 230, 11)),
                   const Spacer(),
                   MainTextButton(
                       buttonName:
                           isLoading ? 'Loading....' : 'Start counting process',
                       isDisabled: isLoading,
-                      // onPressed: () =>
-                      //     fetchPathfinderFields(_urlController.text)),
-                      onPressed: () => fetchPathfinderFields(urlString)),
+                      onPressed: () =>
+                          fetchPathfinderFields(_urlController.text)),
                 ],
               ),
             ),

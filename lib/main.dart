@@ -6,7 +6,6 @@ import 'package:pathfinder/bloc/pathfinder_bloc.dart';
 import 'package:pathfinder/pages/home_page.dart';
 
 void main() async {
-  // vertical orientation screen lock
   WidgetsFlutterBinding.ensureInitialized();
 
   SystemChrome.setPreferredOrientations([
@@ -33,13 +32,10 @@ class MyApp extends StatelessWidget {
               debugShowCheckedModeBanner: false,
               title: 'Pathfinder',
               theme: ThemeData(
-                // fontFamily: 'Poppins',
                 scaffoldBackgroundColor: const Color(0xFF141B22),
-                // scaffoldBackgroundColor: const Color(0xFFF2F2F2),
                 textTheme: const TextTheme(
                   bodyMedium: TextStyle(
                     color: Color(0xFFF2F2F2),
-                    //  color: Color(0xFF131A21),
                     fontSize: 16,
                     height: 1.4,
                     fontWeight: FontWeight.w400,
@@ -47,7 +43,6 @@ class MyApp extends StatelessWidget {
                 ),
               ),
               home: const HomePage(),
-              // onGenerateRoute: AppPages.GenerateRouteSettings,
             ),
           ),
         ),
