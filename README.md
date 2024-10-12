@@ -1,6 +1,8 @@
 # pathfinder
 
-A new Flutter project.
+# flutter version: 3.24.0
+
+# test URL: https://flutter.webspark.dev/flutter/api
 
 ## Getting Started
 

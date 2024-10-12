@@ -82,18 +82,19 @@ class _ProcessPageState extends State<ProcessPage> {
     }
 
     pathfinderData = results;
+
     if (mounted) {
       context.read<PathfinderBloc>().add(SavePathfinderData(updatedData));
     }
 
     setState(() {
+      isCalculating = false;
       progress = 1.0;
     });
   }
 
   Future<void> sendPathfinderResult(String url) async {
     setState(() {
-      isCalculating = false;
       isLoading = true;
       errorMessage = null;
       isError = false;
@@ -105,15 +106,16 @@ class _ProcessPageState extends State<ProcessPage> {
         body: pathfinderData!,
       );
 
-      setState(() {
-        if (mounted) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const ResultListPage()),
-          );
-        }
-        isLoading = false;
-      });
+      if (mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const ResultListPage()),
+        ).then((_) {
+          setState(() {
+            isLoading = false;
+          });
+        });
+      }
     } catch (error) {
       setState(() {
         isError = true;
@@ -142,9 +144,9 @@ class _ProcessPageState extends State<ProcessPage> {
                   TextWidget(
                     text: isLoading
                         ? 'Sending...'
-                        : progress == 1.0
-                            ? 'All calculations have finished. You can send results to the server.'
-                            : 'Calculating...',
+                        : isCalculating
+                            ? 'Calculating...'
+                            : 'All calculations have finished. You can send results to the server.',
                     textAlign: TextAlign.center,
                   ),
                   SizedBox(height: 24.h),
@@ -152,7 +154,7 @@ class _ProcessPageState extends State<ProcessPage> {
                     const CircularProgressIndicator(
                         color: Color.fromARGB(255, 110, 230, 11)),
                   SizedBox(height: 24.h),
-                  if (isCalculating)
+                  if (!isLoading)
                     Column(
                       children: [
                         CircularProgressIndicator(
@@ -177,7 +179,7 @@ class _ProcessPageState extends State<ProcessPage> {
                       fontSize: 14,
                     ),
                   const Spacer(),
-                  if (progress == 1.0)
+                  if (!isCalculating)
                     MainTextButton(
                       buttonName:
                           isLoading ? 'Sending...' : 'Send results to server',
