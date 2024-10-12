@@ -1,4 +1,3 @@
-import 'dart:collection';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -10,6 +9,7 @@ import 'package:pathfinder/components/main_text_button.dart';
 import 'package:pathfinder/components/text_widget.dart';
 import 'package:pathfinder/pages/result_list_page.dart';
 import 'package:pathfinder/repositories/pathfinder_repository.dart';
+import 'package:pathfinder/utils/bfs_algorithm.dart';
 
 class ProcessPage extends StatefulWidget {
   const ProcessPage({super.key});
@@ -21,6 +21,7 @@ class ProcessPage extends StatefulWidget {
 class _ProcessPageState extends State<ProcessPage> {
   late final PathfinderRepository pathfinderRepository;
   bool isLoading = false;
+  bool isCalculating = true;
   bool isError = false;
   String? errorMessage;
   List<dynamic>? pathfinderData;
@@ -33,7 +34,10 @@ class _ProcessPageState extends State<ProcessPage> {
     final blocState = context.read<PathfinderBloc>().state as PathfinderLoaded;
     pathfinderData = blocState.data;
 
-    calculatPathfinderData();
+    Future.delayed(const Duration(seconds: 1), () {
+      print('One second has passed.'); // Prints after 1 second.
+      calculatPathfinderData();
+    });
   }
 
   void calculatPathfinderData() {
@@ -70,67 +74,11 @@ class _ProcessPageState extends State<ProcessPage> {
     context.read<PathfinderBloc>().add(SavePathfinderData(updatedData));
 
     print('Calculation Results: $results');
+
+    setState(() {
+      isCalculating = false;
+    });
   }
-
-  List<Map<String, int>>? bfs(
-      List<String> field, Map<String, int> start, Map<String, int> end) {
-    int rows = field.length;
-    int cols = field[0].length;
-
-    List<List<int>> directions = [
-      [0, 1],
-      [0, -1],
-      [1, 0],
-      [-1, 0],
-      [1, 1],
-      [1, -1],
-      [-1, 1],
-      [-1, -1]
-    ];
-
-    Queue<List<Map<String, int>>> queue = Queue();
-    queue.add([start]);
-
-    Set<String> visited = {key(start['x'] ?? 0, start['y'] ?? 0)};
-
-    while (queue.isNotEmpty) {
-      List<Map<String, int>> path = queue.removeFirst();
-      Map<String, int> current = path.last;
-
-      if (current['x'] == end['x'] && current['y'] == end['y']) {
-        return path;
-      }
-
-      for (var direction in directions) {
-        int newX = (current['x'] ?? 0) + direction[0];
-        int newY = (current['y'] ?? 0) + direction[1];
-
-        if (isValidCell(newX, newY, field, visited)) {
-          visited.add(key(newX, newY));
-
-          List<Map<String, int>> newPath = List.from(path)
-            ..add({"x": newX, "y": newY});
-          queue.add(newPath);
-        }
-      }
-    }
-
-    return null;
-  }
-
-  bool isValidCell(int x, int y, List<String> field, Set<String> visited) {
-    int rows = field.length;
-    int cols = field[0].length;
-
-    return x >= 0 &&
-        y >= 0 &&
-        x < cols &&
-        y < rows &&
-        field[y][x] == '.' &&
-        !visited.contains(key(x, y));
-  }
-
-  String key(int x, int y) => '$x,$y';
 
   Future<void> sendPathfinderResult(String url) async {
     print('****sending_');
@@ -150,14 +98,13 @@ class _ProcessPageState extends State<ProcessPage> {
       print('****sending_result: $result');
 
       setState(() {
-        isLoading = false;
-
         if (mounted) {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const ResultListPage()),
           );
         }
+        isLoading = false;
       });
     } catch (error) {
       print('****process_error: $error');
@@ -188,16 +135,23 @@ class _ProcessPageState extends State<ProcessPage> {
                   const Spacer(),
                   TextWidget(
                     text: isLoading
-                        ? 'Calculating...'
-                        : 'All calculations have finished. You can send results to the server.',
+                        ? 'Sending...'
+                        : isCalculating
+                            ? 'Calculating...'
+                            : 'All calculations have finished. You can send results to the server.',
                     textAlign: TextAlign.center,
                   ),
-                  SizedBox(height: 12.h),
-                  const TextWidget(
-                    text: '100%',
-                    textAlign: TextAlign.center,
-                    fontSize: 20,
-                  ),
+                  SizedBox(height: 24.h),
+                  if (isLoading)
+                    const CircularProgressIndicator(
+                        color: Color.fromARGB(255, 110, 230, 11)),
+                  SizedBox(height: 24.h),
+                  if (!isLoading)
+                    const TextWidget(
+                      text: '100%',
+                      textAlign: TextAlign.center,
+                      fontSize: 20,
+                    ),
                   SizedBox(height: 24.h),
                   if (isError)
                     TextWidget(
@@ -208,7 +162,9 @@ class _ProcessPageState extends State<ProcessPage> {
                     ),
                   const Spacer(),
                   MainTextButton(
-                    buttonName: 'Send results to server',
+                    buttonName:
+                        isLoading ? 'Sending...' : 'Send results to server',
+                    isDisabled: isLoading,
                     onPressed: () => sendPathfinderResult(urlString),
                   ),
                 ],

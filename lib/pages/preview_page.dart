@@ -41,31 +41,35 @@ class PreviewPage extends StatelessWidget {
                     child: Column(
                       children: [
                         Expanded(
-                          child: GridView.builder(
-                            gridDelegate:
-                                SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: field[0].length,
-                              childAspectRatio: 1.0,
-                            ),
-                            itemCount: field.length * field[0].length,
-                            itemBuilder: (context, index) {
-                              int x = index % field[0].length;
-                              int y = index ~/ field[0].length;
+                          child: Scrollbar(
+                            thumbVisibility: true,
+                            child: GridView.builder(
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              gridDelegate:
+                                  SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: field[0].length,
+                                childAspectRatio: 1.0,
+                              ),
+                              itemCount: field.length * field[0].length,
+                              itemBuilder: (context, index) {
+                                int x = index % field[0].length;
+                                int y = index ~/ field[0].length;
 
-                              return Container(
-                                margin: const EdgeInsets.all(1.0),
-                                color: _getCellColor(
-                                    x, y, start, end, steps, field),
-                                child: Align(
-                                  alignment: Alignment.center,
-                                  child: TextWidget(
-                                    text: '($x,$y)',
-                                    color: Colors.amber[700],
-                                    fontWeight: FontWeight.w500,
+                                return Container(
+                                  margin: const EdgeInsets.all(1.0),
+                                  color: _getCellColor(
+                                      x, y, start, end, steps, field),
+                                  child: Align(
+                                    alignment: Alignment.center,
+                                    child: TextWidget(
+                                      text: '($x,$y)',
+                                      color: Colors.amber[700],
+                                      fontWeight: FontWeight.w500,
+                                    ),
                                   ),
-                                ),
-                              );
-                            },
+                                );
+                              },
+                            ),
                           ),
                         ),
                         const SizedBox(height: 24.0),
